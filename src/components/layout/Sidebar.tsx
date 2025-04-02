@@ -90,17 +90,12 @@ const Sidebar = ({
       section: "records",
     },
     {
-      id: "other",
-      label: "Other Records",
+      id: "allergy",
+      label: "Allergy Records",
       icon: <FolderPlus size={20} />,
       section: "records",
     },
-    {
-      id: "timeline",
-      label: "Timeline",
-      icon: <Clock size={20} />,
-      section: "features",
-    },
+
     {
       id: "reminders",
       label: "Reminders",

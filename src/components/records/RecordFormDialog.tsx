@@ -32,6 +32,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Upload, Database, Link } from "lucide-react";
 import PatientPortalConnector from "./PatientPortalConnector";
+import FileUpload from "./FileUpload";
 
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters" }),
@@ -51,6 +52,7 @@ interface RecordFormDialogProps {
   record?: any;
   onSubmit?: (data: FormValues) => void;
   familyMemberId?: string;
+  activeTab?: "manual" | "upload" | "portal";
 }
 
 const RecordFormDialog: React.FC<RecordFormDialogProps> = ({
@@ -59,9 +61,10 @@ const RecordFormDialog: React.FC<RecordFormDialogProps> = ({
   record = null,
   onSubmit = () => {},
   familyMemberId = "1", // Default to self
+  activeTab = "manual",
 }) => {
-  const [activeTab, setActiveTab] = useState<"manual" | "upload" | "portal">(
-    "manual",
+  const [currentTab, setCurrentTab] = useState<"manual" | "upload" | "portal">(
+    activeTab,
   );
   const [showPortalConnector, setShowPortalConnector] = useState(false);
   const [fileUploaded, setFileUploaded] = useState(false);
@@ -109,8 +112,8 @@ const RecordFormDialog: React.FC<RecordFormDialogProps> = ({
           </DialogHeader>
 
           <Tabs
-            value={activeTab}
-            onValueChange={(value) => setActiveTab(value as any)}
+            value={currentTab}
+            onValueChange={(value) => setCurrentTab(value as any)}
             className="w-full"
           >
             <TabsList className="grid w-full grid-cols-3">
@@ -288,40 +291,30 @@ const RecordFormDialog: React.FC<RecordFormDialogProps> = ({
 
             <TabsContent value="upload" className="pt-4">
               <div className="space-y-4">
-                <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                  <div className="flex flex-col items-center justify-center space-y-4">
-                    <Upload className="h-10 w-10 text-muted-foreground" />
-                    <div className="space-y-2">
-                      <h3 className="font-medium">Upload Document</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Drag and drop your file here, or click to browse
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Supported formats: PDF, JPG, PNG (Max size: 10MB)
-                      </p>
-                    </div>
-                    <Label htmlFor="file-upload" className="cursor-pointer">
-                      <div className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium">
-                        Browse Files
-                      </div>
-                      <Input
-                        id="file-upload"
-                        type="file"
-                        className="hidden"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={handleFileChange}
-                      />
-                    </Label>
-                  </div>
-                </div>
+                <FileUpload
+                  onUploadComplete={() => {
+                    setFileUploaded(true);
+                  }}
+                  onExtractedData={(data) => {
+                    // Populate form fields with extracted data
+                    form.setValue("title", data.title || "");
+                    form.setValue(
+                      "date",
+                      data.date || new Date().toISOString().split("T")[0],
+                    );
+                    form.setValue("provider", data.provider || "");
+                    form.setValue(
+                      "category",
+                      data.recordType?.toLowerCase() || "medical",
+                    );
+                    form.setValue("description", data.description || "");
+                    form.setValue("notes", data.notes || "");
+                    form.setValue("documentUrl", data.documentUrl || "");
 
-                {fileUploaded && (
-                  <div className="bg-muted p-4 rounded-md">
-                    <p className="text-sm font-medium">
-                      File selected: {fileName}
-                    </p>
-                  </div>
-                )}
+                    // Set file name for display
+                    setFileName(data.title || "Uploaded document");
+                  }}
+                />
 
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">

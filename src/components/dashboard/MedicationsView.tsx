@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Search, Calendar, Clock, Plus, Pill, AlertCircle } from "lucide-react";
+import RecordsSummaryHeader from "./RecordsSummaryHeader";
 
 interface MedicationsViewProps {
   onAddMedication?: () => void;
@@ -147,80 +148,57 @@ const MedicationsView: React.FC<MedicationsViewProps> = ({
       </div>
 
       {/* Medication Summary */}
-      <Card className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-100">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Medication Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white p-4 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="bg-purple-100 p-2 rounded-full">
-                  <Pill className="h-6 w-6 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Active Medications</p>
-                  <p className="text-2xl font-bold">
-                    {
-                      medications.filter((med) => med.status === "Active")
-                        .length
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="bg-blue-100 p-2 rounded-full">
-                  <Clock className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Daily Medications</p>
-                  <p className="text-2xl font-bold">
-                    {
-                      medications.filter(
-                        (med) =>
-                          med.frequency.includes("daily") &&
-                          med.status === "Active",
-                      ).length
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg">
-              <div className="flex items-center gap-3">
-                <div className="bg-red-100 p-2 rounded-full">
-                  <AlertCircle className="h-6 w-6 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Needs Refill</p>
-                  <p className="text-2xl font-bold">{needsRefill.length}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {needsRefill.length > 0 && (
-            <div className="mt-4 p-3 bg-red-50 rounded-lg border border-red-100">
-              <h4 className="text-sm font-medium text-red-800 mb-2">
-                Medications Needing Refill:
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {needsRefill.map((med) => (
-                  <div key={med.id} className="flex items-center gap-2 text-xs">
-                    <AlertCircle className="h-4 w-4 text-red-600" />
+      <RecordsSummaryHeader
+        title="Medication Summary"
+        gradientColors="bg-gradient-to-r from-purple-50 to-pink-50"
+        borderColor="border-purple-100"
+        summaryItems={[
+          {
+            icon: <Pill className="h-6 w-6 text-purple-600" />,
+            label: "Active Medications",
+            value: medications.filter((med) => med.status === "Active").length,
+            bgColor: "bg-purple-100",
+            textColor: "text-purple-600",
+          },
+          {
+            icon: <Clock className="h-6 w-6 text-blue-600" />,
+            label: "Daily Medications",
+            value: medications.filter(
+              (med) =>
+                med.frequency.includes("daily") && med.status === "Active",
+            ).length,
+            bgColor: "bg-blue-100",
+            textColor: "text-blue-600",
+          },
+          {
+            icon: <AlertCircle className="h-6 w-6 text-red-600" />,
+            label: "Needs Refill",
+            value: needsRefill.length,
+            bgColor: "bg-red-100",
+            textColor: "text-red-600",
+          },
+        ]}
+        alertItems={
+          needsRefill.length > 0
+            ? needsRefill.map((med) => ({
+                icon: <AlertCircle className="h-4 w-4 text-red-600" />,
+                text: (
+                  <>
                     <span className="font-medium">{med.name}</span>
                     <span className="text-gray-600">
+                      {" "}
                       ({med.dosage}, {med.frequency})
                     </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </>
+                ),
+              }))
+            : []
+        }
+        alertTitle="Medications Needing Refill:"
+        alertBgColor="bg-red-50"
+        alertBorderColor="border-red-100"
+        alertTextColor="text-red-800"
+      />
 
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-grow">

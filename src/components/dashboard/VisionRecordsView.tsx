@@ -4,7 +4,17 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Search, Filter, Calendar, User, Plus } from "lucide-react";
+import {
+  Eye,
+  Search,
+  Filter,
+  Calendar,
+  User,
+  Plus,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
+import RecordsSummaryHeader from "./RecordsSummaryHeader";
 
 interface VisionRecordsViewProps {
   onAddRecord?: () => void;
@@ -110,6 +120,31 @@ const VisionRecordsView: React.FC<VisionRecordsViewProps> = ({
       record.provider.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  // Calculate summary statistics
+  const totalRecords = visionRecords.length;
+  const prescriptionRecords = visionRecords.filter(
+    (record) => record.prescriptionDetails,
+  ).length;
+  const contactLensRecords = visionRecords.filter(
+    (record) => record.contactLensDetails,
+  ).length;
+
+  // Get the most recent record
+  const sortedRecords = [...visionRecords].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+  const mostRecentRecord = sortedRecords[0];
+
+  // Calculate time since last exam
+  const lastExamDate = new Date(mostRecentRecord.date);
+  const currentDate = new Date();
+  const monthsSinceLastExam =
+    (currentDate.getFullYear() - lastExamDate.getFullYear()) * 12 +
+    (currentDate.getMonth() - lastExamDate.getMonth());
+
+  // Determine if an eye exam is needed (if more than 12 months since last exam)
+  const needsEyeExam = monthsSinceLastExam >= 12;
+
   return (
     <div className="w-full h-full p-6 bg-white">
       <div className="flex justify-between items-center mb-6">
@@ -119,6 +154,58 @@ const VisionRecordsView: React.FC<VisionRecordsViewProps> = ({
           Add Vision Record
         </Button>
       </div>
+
+      {/* Vision Status Summary */}
+      <RecordsSummaryHeader
+        title="Vision Health Summary"
+        gradientColors="bg-gradient-to-r from-blue-50 to-indigo-50"
+        borderColor="border-blue-100"
+        summaryItems={[
+          {
+            icon: <Eye className="h-6 w-6 text-blue-600" />,
+            label: "Total Records",
+            value: totalRecords,
+            bgColor: "bg-blue-100",
+            textColor: "text-blue-600",
+          },
+          {
+            icon: <Eye className="h-6 w-6 text-blue-600" />,
+            label: "Prescription Records",
+            value: prescriptionRecords,
+            bgColor: "bg-blue-100",
+            textColor: "text-blue-600",
+          },
+          {
+            icon: <Eye className="h-6 w-6 text-blue-600" />,
+            label: "Contact Lens Records",
+            value: contactLensRecords,
+            bgColor: "bg-blue-100",
+            textColor: "text-blue-600",
+          },
+        ]}
+        alertItems={
+          needsEyeExam
+            ? [
+                {
+                  icon: (
+                    <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
+                  ),
+                  text: (
+                    <span>
+                      Your last eye exam was{" "}
+                      <strong>{monthsSinceLastExam} months ago</strong>. Annual
+                      eye exams are recommended.
+                    </span>
+                  ),
+                },
+              ]
+            : []
+        }
+        alertTitle="Recommended Actions:"
+        alertBgColor="bg-yellow-50"
+        alertBorderColor="border-yellow-100"
+        alertTextColor="text-yellow-800"
+      />
 
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-grow">

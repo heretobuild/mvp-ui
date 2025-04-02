@@ -4,41 +4,47 @@ import VisionRecordsView from "./VisionRecordsView";
 import DentalRecordsView from "./DentalRecordsView";
 import ImmunizationRecordsView from "./ImmunizationRecordsView";
 import MedicationsView from "./MedicationsView";
-import TimelineView from "./TimelineView";
-import RemindersView from "./RemindersView";
 import FamilyTree from "../family/FamilyTree";
 import HealthInsights from "../insights/HealthInsights";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import RecordFormDialog from "../records/RecordFormDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Plus, X, Users } from "lucide-react";
+import { Plus, X, Users, FileText, Upload, Link } from "lucide-react";
 
 interface DashboardContentProps {
   activeView?: string;
   onViewChange?: (view: string) => void;
-  onAddRecord?: () => void;
+  onAddRecord?: (mode?: "manual" | "upload" | "portal") => void;
   onEditRecord?: (id: string) => void;
   onDeleteRecord?: (id: string) => void;
   onViewRecord?: (id: string) => void;
-  onAddReminder?: () => void;
-  onEditReminder?: (reminder: any) => void;
-  onDeleteReminder?: (id: string) => void;
 }
 
 const DashboardContent: React.FC<DashboardContentProps> = ({
   activeView = "medical",
   onViewChange = () => {},
-  onAddRecord = () => {},
+  onAddRecord = (mode) => {
+    setRecordFormMode(mode || "manual");
+    setShowRecordForm(true);
+  },
   onEditRecord = () => {},
   onDeleteRecord = () => {},
   onViewRecord = () => {},
-  onAddReminder = () => {},
-  onEditReminder = () => {},
-  onDeleteReminder = () => {},
 }) => {
   const [showWelcomeCard, setShowWelcomeCard] = useState(true);
   const [showQuickTips, setShowQuickTips] = useState(false);
+  const [showRecordForm, setShowRecordForm] = useState(false);
+  const [recordFormMode, setRecordFormMode] = useState<
+    "manual" | "upload" | "portal"
+  >("manual");
 
   // Determine if the active view is a record category
   const isRecordCategory = [
@@ -46,7 +52,7 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
     "vision",
     "immunization",
     "medications",
-    "other",
+    "allergy",
     "family",
     "insights",
   ].includes(activeView);
@@ -101,13 +107,43 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
                   >
                     Quick Tips
                   </Button>
-                  <Button
-                    className="bg-white text-blue-700 hover:bg-blue-50"
-                    onClick={onAddRecord}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add First Record
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button className="bg-white text-blue-700 hover:bg-blue-50">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add First Record
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setRecordFormMode("manual");
+                          setShowRecordForm(true);
+                        }}
+                      >
+                        <FileText className="mr-2 h-4 w-4" />
+                        Manual Entry
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setRecordFormMode("upload");
+                          setShowRecordForm(true);
+                        }}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Document
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setRecordFormMode("portal");
+                          setShowRecordForm(true);
+                        }}
+                      >
+                        <Link className="mr-2 h-4 w-4" />
+                        Connect to EMR Portal
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </CardContent>
@@ -154,25 +190,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           />
         </TabsContent>
 
-        <TabsContent value="other">
+        <TabsContent value="allergy">
           <RecordCategoryView
-            category="other"
+            category="allergy"
             onAddRecord={onAddRecord}
             onEditRecord={onEditRecord}
             onDeleteRecord={onDeleteRecord}
             onViewRecord={onViewRecord}
-          />
-        </TabsContent>
-
-        <TabsContent value="timeline">
-          <TimelineView />
-        </TabsContent>
-
-        <TabsContent value="reminders">
-          <RemindersView
-            onAddReminder={onAddReminder}
-            onEditReminder={onEditReminder}
-            onDeleteReminder={onDeleteReminder}
           />
         </TabsContent>
 
@@ -250,248 +274,6 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
                   </Button>
                 </CardContent>
               </Card>
-
-              {/* Upcoming Reminders Card */}
-              <Card>
-                <CardContent className="p-3 sm:p-4 md:p-6">
-                  <h2 className="text-lg font-semibold mb-4">
-                    Upcoming Reminders
-                  </h2>
-                  <div className="space-y-4">
-                    {[1, 2].map((i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 pb-3 border-b last:border-0"
-                      >
-                        <div className="w-10 h-10 rounded bg-amber-100 flex items-center justify-center text-amber-600">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                          </svg>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">
-                            {["Dental Appointment", "Medication Refill"][i - 1]}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {["Tomorrow, 10:00 AM", "In 3 days"][i - 1]}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="w-full mt-4"
-                    onClick={() => onViewChange("reminders")}
-                  >
-                    View All Reminders
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Health Timeline Card */}
-              <Card>
-                <CardContent className="p-3 sm:p-4 md:p-6">
-                  <h2 className="text-lg font-semibold mb-4">
-                    Health Timeline
-                  </h2>
-                  <div className="relative pl-6">
-                    <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-gray-200" />
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="mb-4 relative">
-                        <div className="absolute left-[-18px] top-1 w-4 h-4 rounded-full bg-primary" />
-                        <p className="font-medium">
-                          {
-                            [
-                              "Annual Physical",
-                              "Dental Cleaning",
-                              "Eye Examination",
-                            ][i - 1]
-                          }
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {
-                            [
-                              "October 15, 2023",
-                              "September 5, 2023",
-                              "August 20, 2023",
-                            ][i - 1]
-                          }
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="w-full mt-4"
-                    onClick={() => onViewChange("timeline")}
-                  >
-                    View Full Timeline
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Upcoming Doctor Appointments */}
-            <h2 className="text-xl font-semibold mb-4">
-              Upcoming Doctor Appointments
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
-              {/* Month View Calendar */}
-              <Card className="md:col-span-2 overflow-hidden">
-                <CardContent className="p-3 sm:p-4 md:p-6">
-                  <div className="flex justify-between items-center mb-2 sm:mb-4">
-                    <h3 className="font-medium">June 2024</h3>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="m15 18-6-6 6-6" />
-                        </svg>
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="m9 18 6-6-6-6" />
-                        </svg>
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-7 gap-1 text-center max-w-full overflow-x-auto">
-                    {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-                      (day) => (
-                        <div
-                          key={day}
-                          className="text-xs font-medium text-gray-500 py-1"
-                        >
-                          {day}
-                        </div>
-                      ),
-                    )}
-                    {Array.from({ length: 2 }).map((_, i) => (
-                      <div
-                        key={`empty-start-${i}`}
-                        className="text-sm p-2 text-gray-300"
-                      ></div>
-                    ))}
-                    {Array.from({ length: 30 }).map((_, i) => {
-                      const day = i + 1;
-                      const isToday = day === 15;
-                      const hasAppointment = day === 18 || day === 25;
-                      return (
-                        <div
-                          key={`day-${day}`}
-                          className={`text-sm p-2 rounded-full w-10 h-10 mx-auto flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors ${isToday ? "bg-primary text-white hover:bg-primary/90" : ""} ${hasAppointment ? "border-2 border-blue-500" : ""}`}
-                          onClick={() => onAddReminder()}
-                          title="Click to add appointment"
-                        >
-                          {day}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Upcoming Appointments List */}
-              <Card>
-                <CardContent className="p-3 sm:p-4 md:p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-medium">Next Appointments</h3>
-                    <Button size="sm" onClick={onAddReminder}>
-                      <Plus className="h-4 w-4 mr-1" /> Add
-                    </Button>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3 pb-3 border-b">
-                      <div className="w-10 h-10 rounded bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                          <circle cx="9" cy="7" r="4" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="font-medium">Dr. Sarah Johnson</p>
-                        <p className="text-sm text-gray-500">Annual Physical</p>
-                        <p className="text-sm font-medium text-blue-600 mt-1">
-                          June 18, 2024 • 10:00 AM
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 pb-3">
-                      <div className="w-10 h-10 rounded bg-purple-100 flex items-center justify-center text-purple-600 flex-shrink-0">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                          <circle cx="12" cy="12" r="3" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="font-medium">Dr. Michael Chen</p>
-                        <p className="text-sm text-gray-500">Eye Examination</p>
-                        <p className="text-sm font-medium text-blue-600 mt-1">
-                          June 25, 2024 • 2:30 PM
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      className="w-full mt-2"
-                      onClick={() => onViewChange("reminders")}
-                    >
-                      View All Appointments
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </div>
         </TabsContent>
@@ -561,6 +343,13 @@ const DashboardContent: React.FC<DashboardContentProps> = ({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Record Form Dialog */}
+      <RecordFormDialog
+        open={showRecordForm}
+        onOpenChange={setShowRecordForm}
+        activeTab={recordFormMode}
+      />
     </div>
   );
 };
