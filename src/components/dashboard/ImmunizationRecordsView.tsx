@@ -11,7 +11,9 @@ import {
   Plus,
   Shield,
   CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
+import RecordsSummaryHeader from "./RecordsSummaryHeader";
 
 interface ImmunizationRecordsViewProps {
   onAddRecord?: () => void;
@@ -169,108 +171,64 @@ const ImmunizationRecordsView: React.FC<ImmunizationRecordsViewProps> = ({
       </div>
 
       {/* Vaccination Status Summary */}
-      <Card className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Vaccination Status</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-3 bg-white p-3 rounded-lg">
-              <div className="bg-green-100 p-2 rounded-full">
-                <Shield className="h-6 w-6 text-green-600" />
+      <RecordsSummaryHeader
+        title="Vaccination Status"
+        gradientColors="bg-gradient-to-r from-blue-50 to-indigo-50"
+        borderColor="border-blue-100"
+        summaryItems={[
+          {
+            icon: <Shield className="h-6 w-6 text-green-600" />,
+            label: "COVID-19",
+            value: (
+              <div className="flex items-center text-sm">
+                <CheckCircle2 className="h-3 w-3 text-green-600 mr-1" />
+                <p className="text-xs text-green-600">
+                  Fully vaccinated + Booster
+                </p>
               </div>
-              <div>
-                <p className="text-sm font-medium">COVID-19</p>
-                <div className="flex items-center">
-                  <CheckCircle2 className="h-3 w-3 text-green-600 mr-1" />
-                  <p className="text-xs text-green-600">
-                    Fully vaccinated + Booster
-                  </p>
-                </div>
+            ),
+            bgColor: "bg-green-100",
+            textColor: "text-green-600",
+          },
+          {
+            icon: <Shield className="h-6 w-6 text-green-600" />,
+            label: "Influenza",
+            value: (
+              <div className="flex items-center text-sm">
+                <CheckCircle2 className="h-3 w-3 text-green-600 mr-1" />
+                <p className="text-xs text-green-600">Current for 2023-2024</p>
               </div>
-            </div>
-            <div className="flex items-center gap-3 bg-white p-3 rounded-lg">
-              <div className="bg-green-100 p-2 rounded-full">
-                <Shield className="h-6 w-6 text-green-600" />
+            ),
+            bgColor: "bg-green-100",
+            textColor: "text-green-600",
+          },
+          {
+            icon: <Shield className="h-6 w-6 text-yellow-600" />,
+            label: "Shingles",
+            value: (
+              <div className="flex items-center text-sm">
+                <AlertCircle className="h-3 w-3 text-yellow-600 mr-1" />
+                <p className="text-xs text-yellow-600">1 of 2 doses complete</p>
               </div>
-              <div>
-                <p className="text-sm font-medium">Influenza</p>
-                <div className="flex items-center">
-                  <CheckCircle2 className="h-3 w-3 text-green-600 mr-1" />
-                  <p className="text-xs text-green-600">
-                    Current for 2023-2024
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 bg-white p-3 rounded-lg">
-              <div className="bg-yellow-100 p-2 rounded-full">
-                <Shield className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Shingles</p>
-                <div className="flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-yellow-600 mr-1"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
-                    <line x1="12" y1="16" x2="12.01" y2="16" />
-                  </svg>
-                  <p className="text-xs text-yellow-600">
-                    1 of 2 doses complete
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {incompleteVaccinations.length > 0 && (
-            <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-100">
-              <h4 className="text-sm font-medium text-yellow-800 mb-2">
-                Upcoming Vaccinations:
-              </h4>
-              <ul className="space-y-1">
-                {incompleteVaccinations.map((record) => (
-                  <li
-                    key={record.id}
-                    className="text-xs flex items-start gap-2"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-yellow-600 mt-0.5"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                    <span>
-                      <span className="font-medium">{record.type}</span>:{" "}
-                      {record.details.nextDose}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            ),
+            bgColor: "bg-yellow-100",
+            textColor: "text-yellow-600",
+          },
+        ]}
+        alertItems={incompleteVaccinations.map((record) => ({
+          icon: <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />,
+          text: (
+            <span>
+              <span className="font-medium">{record.type}</span>:{" "}
+              {record.details.nextDose}
+            </span>
+          ),
+        }))}
+        alertTitle="Upcoming Vaccinations:"
+        alertBgColor="bg-yellow-50"
+        alertBorderColor="border-yellow-100"
+        alertTextColor="text-yellow-800"
+      />
 
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <div className="relative flex-grow">
